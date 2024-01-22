@@ -2,8 +2,9 @@
 node_modules/
 pet-registry-server/vendor/
 
-# Symfony cache and logs
+# Symfony cache, logs and the generated config reference
 pet-registry-server/var/
+pet-registry-server/config/reference.php
 
 # Build output and caches
 dist/
