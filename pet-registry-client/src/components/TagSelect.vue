@@ -1,44 +1,43 @@
 <template>
-  <div class="form-label">{{ label }}</div>
-  <div class="btn-group">
-    <DynamicButton v-for="tag in tagOptions" :key="tag" :inner-text="tag" :on-click="selectTag"
-      :button-class="getButtonClass(tag)" />
-  </div>
+  <fieldset class="field">
+    <legend class="field-label">
+      {{ legend }}
+    </legend>
+    <div class="segmented">
+      <label
+        v-for="option in options"
+        :key="option"
+        class="segment"
+        :class="{ 'is-selected': option === modelValue }"
+      >
+        <input
+          type="radio"
+          class="visually-hidden"
+          :name="name"
+          :value="option"
+          :checked="option === modelValue"
+          @change="emit('update:modelValue', option)"
+        >
+        {{ option.charAt(0).toUpperCase() + option.slice(1) }}
+      </label>
+    </div>
+    <p
+      v-if="error"
+      class="field-error"
+    >
+      {{ error }}
+    </p>
+  </fieldset>
 </template>
-  
-<script>
-import DynamicButton from './DynamicButton.vue';
 
-export default {
-  data() {
-    return {
-      selectedTag: null,
-    };
-  },
-  components: {
-    DynamicButton,
-  },
-  props: {
-    label: String,
-    tagOptions: {
-      type: Array,
-      required: true,
-    },
-    onTagSelect: {
-      type: Function,
-      required: false,
-      default: null,
-    },
-  },
-  methods: {
-    selectTag(selectedTag) {
-      this.selectedTag = selectedTag;
-      this.onTagSelect(selectedTag);
-    },
-    getButtonClass(tag) {
-      return tag === this.selectedTag ? 'btn text-white btn-primary' : 'btn btn-outline-primary';
-    },
-  },
-};
+<script setup>
+defineProps({
+  legend: { type: String, required: true },
+  name: { type: String, required: true },
+  options: { type: Array, required: true },
+  modelValue: { type: String, default: '' },
+  error: { type: String, default: '' },
+})
+
+const emit = defineEmits(['update:modelValue'])
 </script>
-

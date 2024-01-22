@@ -1,141 +1,181 @@
 <template>
-    <v-container class="text-center">
-        <v-row justify="center">
-            <v-col cols="12" md="6">
-                <v-form @submit.prevent="submitForm">
-                    <v-row>
-                        <v-col class="text-left" cols="12">
-                            <v-subheader>What is your pet's name?</v-subheader>
-                            <v-text-field v-model="form.name" required variant='outlined' color="white"></v-text-field>
-                        </v-col>
-                    </v-row>
+  <v-sheet
+    class="panel"
+    tag="section"
+    aria-labelledby="vuetify-form-title"
+  >
+    <template v-if="registeredPet">
+      <v-alert
+        type="success"
+        variant="tonal"
+        role="status"
+        class="mb-4"
+      >
+        <h1
+          id="vuetify-form-title"
+          class="panel-title"
+        >
+          {{ registeredPet.petName }} is registered
+        </h1>
+        {{ describePet(registeredPet) }}.
+      </v-alert>
+      <v-btn
+        color="primary"
+        @click="startOver"
+      >
+        Register another pet
+      </v-btn>
+    </template>
 
-                    <v-row>
-                        <v-col cols="12">
-                            <div class="button-group">
-                                <v-btn v-for="(type, index) in typeOptions" :key="index" @click="selectType(type)"
-                                    :color="form.type === type ? 'primary' : ''" outlined class="custom-button"
-                                    :style="{ color: form.type === type ? 'white' : '#1976d2', borderRight: index === typeOptions.length - 1 ? '1px solid #1976d2' : 'none', borderTopLeftRadius: index === 0 ? '4px' : '0', borderBottomLeftRadius: index === 0 ? '4px' : '0', borderTopRightRadius: index === typeOptions.length - 1 ? '4px' : '0', borderBottomRightRadius: index === typeOptions.length - 1 ? '4px' : '0' }">
-                                    {{ type }}
-                                </v-btn>
-                            </div>
-                        </v-col>
-                    </v-row>
+    <v-form
+      v-else
+      @submit.prevent="register"
+    >
+      <h1
+        id="vuetify-form-title"
+        class="panel-title"
+      >
+        Tell us about your {{ form.petType || 'pet' }}
+      </h1>
 
-                    <v-row>
-                        <v-col class="text-left" cols="12">
-                            <v-subheader>What breed are they?</v-subheader>
-                            <v-autocomplete v-model="form.breed" :items="breedOptions" variant='outlined'
-                                ref="breedAutocomplete" color="white">
-                                <template #no-data>
-                                    <v-list-item @click="selectCantFind">
-                                        <v-list-item-content>
-                                            <v-list-item-title>Can't find it?</v-list-item-title>
-                                        </v-list-item-content>
-                                    </v-list-item>
-                                </template>
-                            </v-autocomplete>
-                        </v-col>
-                    </v-row>
+      <fieldset class="field">
+        <legend class="field-label">
+          Type of pet?
+        </legend>
+        <v-btn-toggle
+          v-model="form.petType"
+          color="primary"
+          variant="outlined"
+          divided
+        >
+          <v-btn
+            v-for="type in PET_TYPES"
+            :key="type"
+            :value="type"
+          >
+            {{ type }}
+          </v-btn>
+        </v-btn-toggle>
+        <p
+          v-if="fieldErrors.petType"
+          class="field-error"
+        >
+          {{ fieldErrors.petType }}
+        </p>
+      </fieldset>
 
-                    <v-row v-if="form.breed === 'Can\'t find it?'">
-                        <v-col cols="12">
-                            <v-radio-group v-model="form.chooseOne" label="Choose One">
-                                <v-radio label="I don't know" value="I don't know"></v-radio>
-                                <v-radio label="It's a mix" value="It's a mix"></v-radio>
-                            </v-radio-group>
-                        </v-col>
-                    </v-row>
+      <v-text-field
+        v-model="form.petName"
+        :label="`What is your ${form.petType || 'pet'}'s name?`"
+        variant="outlined"
+        maxlength="50"
+        :error-messages="fieldErrors.petName"
+      />
 
-                    <v-row>
-                        <v-col cols="12">
-                            <div class="button-group">
-                                <v-btn v-for="(gender, index) in genderOptions" :key="index" @click="selectGender(gender)"
-                                    :color="form.gender === gender ? 'primary' : ''" outlined class="custom-button"
-                                    :style="{ color: form.gender === gender ? 'white' : '#1976d2', borderRight: index === genderOptions.length - 1 ? '1px solid #1976d2' : 'none', borderTopLeftRadius: index === 0 ? '4px' : '0', borderBottomLeftRadius: index === 0 ? '4px' : '0', borderTopRightRadius: index === genderOptions.length - 1 ? '4px' : '0', borderBottomRightRadius: index === genderOptions.length - 1 ? '4px' : '0' }">
-                                    {{ gender }}
-                                </v-btn>
-                            </div>
-                        </v-col>
-                    </v-row>
+      <v-autocomplete
+        v-model="breedChoice"
+        label="What breed are they?"
+        :items="[...breeds, BREED_NOT_FOUND]"
+        :disabled="!form.petType"
+        :hint="form.petType ? '' : 'Choose dog or cat first'"
+        persistent-hint
+        variant="outlined"
+        :error-messages="fieldErrors.breed"
+      />
 
-                    <v-row>
-                        <v-col cols="12">
-                            <v-btn type="submit" color="primary" :disabled="!canSubmit" outlined class="custom-button"
-                                :style="{ color: canSubmit ? 'white' : '#1976d2' }">Continue</v-btn>
-                        </v-col>
-                    </v-row>
-                </v-form>
-            </v-col>
-        </v-row>
-    </v-container>
+      <template v-if="form.breedNotFound">
+        <v-radio-group
+          v-model="form.breedFallback"
+          label="No match? Tell us what you know"
+          :error-messages="fieldErrors.breedFallback"
+        >
+          <v-radio
+            label="I don't know"
+            value="unknown"
+          />
+          <v-radio
+            label="It's a mix"
+            value="mix"
+          />
+        </v-radio-group>
+        <v-text-field
+          v-if="form.breedFallback === 'mix'"
+          v-model="form.mixDescription"
+          label="Which breeds, if you know? (optional)"
+          variant="outlined"
+          maxlength="100"
+          :error-messages="fieldErrors.mixDescription"
+        />
+      </template>
+
+      <fieldset class="field">
+        <legend class="field-label">
+          What gender are they?
+        </legend>
+        <v-btn-toggle
+          v-model="form.gender"
+          color="primary"
+          variant="outlined"
+          divided
+        >
+          <v-btn
+            v-for="gender in GENDERS"
+            :key="gender"
+            :value="gender"
+          >
+            {{ gender }}
+          </v-btn>
+        </v-btn-toggle>
+        <p
+          v-if="fieldErrors.gender"
+          class="field-error"
+        >
+          {{ fieldErrors.gender }}
+        </p>
+      </fieldset>
+
+      <v-alert
+        v-if="errorMessage"
+        type="error"
+        variant="tonal"
+        role="alert"
+        class="mb-4"
+      >
+        {{ errorMessage }}
+      </v-alert>
+
+      <div class="actions">
+        <v-btn
+          type="submit"
+          color="primary"
+          size="large"
+          :disabled="!canSubmit"
+          :loading="submitting"
+        >
+          Continue
+        </v-btn>
+      </div>
+    </v-form>
+  </v-sheet>
 </template>
-  
-<script>
-export default {
-    data() {
-        return {
-            form: {
-                name: '',
-                type: '',
-                breed: '',
-                chooseOne: '',
-                gender: '',
-            },
-            typeOptions: ['Cat', 'Dog'],
-            genderOptions: ['Male', 'Female'],
-            breedOptions: ['Breed1_Cat', 'Breed2_Cat', 'Breed3_Cat', 'Breed1_Dog', 'Breed2_Dog', 'Breed3_Dog'],
-        };
-    },
-    computed: {
-        canSubmit() {
-            return (this.form.breed !== 'Can\'t find it?' && this.form.breed) && this.form.name && this.form.gender;
-        }
-    },
-    methods: {
-        selectType(type) {
-            this.form.type = type;
-            this.form.breed = '';
-            this.form.chooseOne = '';
-        },
-        selectGender(gender) {
-            this.form.gender = gender;
-        },
-        submitForm() {
-            console.log('Form submitted:', this.form);
-        },
-        selectCantFind() {
-            this.$nextTick(() => {
-                this.$refs.breedAutocomplete.hideMenu();
-            });
-            this.form.breed = "Can't find it?";
-        },
-    },
-};
+
+<script setup>
+import { computed } from 'vue'
+import { BREED_NOT_FOUND, GENDERS, PET_TYPES, describePet } from '../pet/registration'
+import { useRegistration } from '../pet/useRegistration'
+
+const { form, breeds, canSubmit, submitting, fieldErrors, errorMessage, registeredPet, register, startOver } =
+  useRegistration()
+
+const breedChoice = computed({
+  get: () => (form.breedNotFound ? BREED_NOT_FOUND : form.breed || null),
+  set: (value) => {
+    form.breedNotFound = value === BREED_NOT_FOUND
+    form.breed = form.breedNotFound ? '' : value ?? ''
+    if (!form.breedNotFound) {
+      form.breedFallback = ''
+      form.mixDescription = ''
+    }
+  },
+})
 </script>
-  
-<style scoped>
-.button-group {
-    display: flex;
-    justify-content: flex-start;
-    gap: 0;
-}
-
-.v-text-field--outlined.v-input--is-focused:not(.v-text-field--readonly) {
-    background-color: white;
-    border-color: #1976d2;
-}
-
-.custom-button {
-    box-shadow: none;
-    margin: 0;
-    border: 1px solid #1976d2;
-}
-
-.custom-text-field {
-    background-color: white;
-    border-radius: 4px;
-    border: 1px solid black;
-}
-</style>
-  

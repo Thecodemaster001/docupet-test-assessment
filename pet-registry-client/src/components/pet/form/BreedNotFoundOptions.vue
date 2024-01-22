@@ -1,61 +1,60 @@
 <template>
-  <div class="breed-options-container">
-    <label class="form-label">Options:</label>
-    <div>
-      <label>
-        <input type="radio" v-model="selectedOption" value="unknown" /> I don't know
-      </label>
+  <fieldset class="field breed-fallback">
+    <legend class="field-label">
+      No match? Tell us what you know
+    </legend>
+    <label class="choice">
+      <input
+        type="radio"
+        name="breed-fallback"
+        value="unknown"
+        :checked="fallback === 'unknown'"
+        @change="emit('update:fallback', 'unknown')"
+      >
+      I don't know
+    </label>
+    <label class="choice">
+      <input
+        type="radio"
+        name="breed-fallback"
+        value="mix"
+        :checked="fallback === 'mix'"
+        @change="emit('update:fallback', 'mix')"
+      >
+      It's a mix
+    </label>
+    <div
+      v-if="fallback === 'mix'"
+      class="mix-details"
+    >
+      <label
+        for="mix-description"
+        class="field-label field-label--small"
+      >Which breeds, if you know? (optional)</label>
+      <input
+        id="mix-description"
+        class="text-input"
+        type="text"
+        maxlength="100"
+        :value="mixDescription"
+        @input="emit('update:mixDescription', $event.target.value)"
+      >
     </div>
-    <div>
-      <label>
-        <input type="radio" v-model="selectedOption" value="mix" /> It's a mix
-      </label>
-    </div>
-    <div v-if="selectedOption === 'mix'" class="mix-details-container">
-      <input type="text" v-model="mixDetails" class="form-control mix-details-input" />
-    </div>
-  </div>
+    <p
+      v-if="error"
+      class="field-error"
+    >
+      {{ error }}
+    </p>
+  </fieldset>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      selectedOption: null,
-      mixDetails: '',
-      keyOptionProp: {
-        type: String,
-        required: true,
-        default: '',
-      },
-      keyMixBreedProp: {
-        type: String,
-        required: true,
-        default: '',
-      },
-    };
-  },
-  watch: {
-    selectedOption(newVal) {
-      this.$emit('update:updatePetProps', this.keyOptionProp, newVal);
-    },
-    mixDetails(newVal) {
-      this.$emit('update:updatePetProps', this.keyMixBreedProp, newVal);
-    },
-  },
-};
+<script setup>
+defineProps({
+  fallback: { type: String, default: '' },
+  mixDescription: { type: String, default: '' },
+  error: { type: String, default: '' },
+})
+
+const emit = defineEmits(['update:fallback', 'update:mixDescription'])
 </script>
-
-<style>
-.breed-options-container {
-  padding: 1em; 
-}
-
-.mix-details-container {
-  padding: 0.66em; 
-}
-
-.mix-details-input {
-  margin-top: 0.33em; 
-}
-</style>
