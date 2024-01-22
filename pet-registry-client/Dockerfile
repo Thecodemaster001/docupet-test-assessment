@@ -1,15 +1,12 @@
-FROM node:21-alpine3.18
+FROM node:22-bookworm-slim
 
-WORKDIR /src/app
+WORKDIR /app
 
-COPY package.json yarn.lock ./
-
-RUN yarn install
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
 
 COPY . .
-
-RUN yarn build
+RUN npm run build
 
 EXPOSE 8080
-
-CMD yarn serve
+CMD ["npm", "run", "preview"]
