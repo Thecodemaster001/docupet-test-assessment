@@ -1,23 +1,24 @@
-FROM php:8.2-cli
+FROM php:8.3-cli
 
-RUN apt-get update && apt-get install -y \
- curl \
- libpng-dev \
- libonig-dev \
- libxml2-dev \
- zip \
- unzip
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN docker-php-ext-install pdo mbstring
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends unzip \
+ && rm -rf /var/lib/apt/lists/*
 
-RUN echo `Current working directory: $(pwd)`
-ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV COMPOSER_ALLOW_SUPERUSER=1 \
+    APP_ENV=prod \
+    APP_DEBUG=0
 
-WORKDIR /src
+WORKDIR /app
+
+COPY composer.json composer.lock symfony.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --no-interaction --prefer-dist
+
 COPY . .
-
-RUN composer install
+RUN [ -f .env ] || cp .env.example .env \
+ && composer dump-autoload --no-dev --classmap-authoritative \
+ && php bin/console cache:warmup
 
 EXPOSE 8000
-CMD php -S 127.0.0.1:8000 -t public
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
