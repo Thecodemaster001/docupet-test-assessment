@@ -12,4 +12,9 @@ export default defineConfig({
   },
   server: { host: true, port: 8080 },
   preview: { host: true, port: 8080 },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./tests/setup.js'],
+    server: { deps: { inline: ['vuetify'] } },
+  },
 })
