@@ -283,7 +283,14 @@ body {
   border-radius: 0 8px 8px 0;
 }
 
+/* Floating the legend keeps it inside the padded box instead of on its top edge. */
+.breed-fallback > legend {
+  float: left;
+  width: 100%;
+}
+
 .choice {
+  clear: both;
   display: flex;
   gap: 0.6rem;
   align-items: center;
