@@ -29,11 +29,11 @@ describe('VuetifyPetForm', () => {
     const wrapper = mountForm()
 
     const toggles = wrapper.findAll('.v-btn-toggle button')
-    await toggles.find((b) => b.text() === 'dog').trigger('click')
+    await toggles.find((b) => b.text() === 'Dog').trigger('click')
     await wrapper.get('input[type="text"]').setValue('Biscuit')
     // Picking from the autocomplete menu needs layout jsdom doesn't have; emit the selection instead.
     wrapper.findComponent({ name: 'VAutocomplete' }).vm.$emit('update:modelValue', 'Beagle')
-    await wrapper.findAll('.v-btn-toggle button').find((b) => b.text() === 'female').trigger('click')
+    await wrapper.findAll('.v-btn-toggle button').find((b) => b.text() === 'Female').trigger('click')
     await flushPromises()
 
     await wrapper.get('form').trigger('submit')

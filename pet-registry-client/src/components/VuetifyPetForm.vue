@@ -44,8 +44,8 @@
         </legend>
         <v-btn-toggle
           v-model="form.petType"
-          color="primary"
           variant="outlined"
+          selected-class="bg-primary"
           divided
         >
           <v-btn
@@ -53,7 +53,7 @@
             :key="type"
             :value="type"
           >
-            {{ type }}
+            {{ capitalise(type) }}
           </v-btn>
         </v-btn-toggle>
         <p
@@ -114,8 +114,8 @@
         </legend>
         <v-btn-toggle
           v-model="form.gender"
-          color="primary"
           variant="outlined"
+          selected-class="bg-primary"
           divided
         >
           <v-btn
@@ -123,7 +123,7 @@
             :key="gender"
             :value="gender"
           >
-            {{ gender }}
+            {{ capitalise(gender) }}
           </v-btn>
         </v-btn-toggle>
         <p
@@ -161,7 +161,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { BREED_NOT_FOUND, GENDERS, PET_TYPES, describePet } from '../pet/registration'
+import { BREED_NOT_FOUND, GENDERS, PET_TYPES, capitalise, describePet } from '../pet/registration'
 import { useRegistration } from '../pet/useRegistration'
 
 const { form, breeds, canSubmit, submitting, fieldErrors, errorMessage, registeredPet, register, startOver } =

@@ -18,7 +18,7 @@
           :checked="option === modelValue"
           @change="emit('update:modelValue', option)"
         >
-        {{ option.charAt(0).toUpperCase() + option.slice(1) }}
+        {{ capitalise(option) }}
       </label>
     </div>
     <p
@@ -31,6 +31,8 @@
 </template>
 
 <script setup>
+import { capitalise } from '../pet/registration'
+
 defineProps({
   legend: { type: String, required: true },
   name: { type: String, required: true },
